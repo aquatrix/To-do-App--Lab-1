@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  FlatList,
-  Switch,
-  TouchableOpacity,
-  Text,
-  Alert,
-} from "react-native";
+import { View, FlatList, Switch, TouchableOpacity, Text, Alert} from "react-native";
 import { style as CSS } from "./styles";
 
 const TaskList = ({ tasks, changeTaskStatus, deleteTask }) => {
@@ -29,12 +22,12 @@ const TaskList = ({ tasks, changeTaskStatus, deleteTask }) => {
 
   const renderTodoItem = ({ item }) => (
     <View style={CSS.todoItem}>
-      <Text style={item.done ? CSS.todoTextDone : CSS.todoText}>
-        {item.text}
+      <Text style={item.status ? CSS.todoTextDone : CSS.todoText}>
+        {item.task}
       </Text>
       <View style={CSS.buttonsContainer}>
         <Switch
-          value={item.done}
+          value={item.status}
           onValueChange={() => changeTaskStatus(item.id)}
           style={CSS.switch}
         />

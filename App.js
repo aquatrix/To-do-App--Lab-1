@@ -1,30 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import AddTask from "./Components/addTask";
 import TaskList from "./Components/taskList";
 import { style as CSS } from "./Components/styles";
-
+import { app } from "./Components/config";
+import { getDatabase, ref, onValue, push, update, set, remove } from "firebase/database";
 const App = () => {
   const [tasks, setTasks] = useState([]);
-  const [idCounter, setIdCounter] = useState(1);
+
+  const db = getDatabase(app);
+  const todoRef = ref(db, "TodoList");
+
+  useEffect(() => {
+    const loadData = onValue(todoRef, (snapshot) => {
+      const todoData = [];
+      snapshot.forEach((cshot) => {
+        todoData.push({ id: cshot.key, ...cshot.val() });
+      });
+      setTasks(todoData);
+    });
+    return () => loadData();
+  }, []);
 
   const addTask = (inputValue) => {
     if (inputValue.trim() !== "") {
-      setTasks([...tasks, { id: idCounter, text: inputValue, done: false }]);
-      setIdCounter(idCounter + 1);
+      const task = {
+        text: inputValue,
+        status: false,
+      };
+      addToDB(task);
     }
   };
 
-  const changeTask = (id) => {
-    const updatedtasks = tasks.map((task) =>
-      task.id === id ? { ...task, done: !task.done } : task
-    );
-    setTasks(updatedtasks);
+  async function addToDB(task) {
+    const newTaskRef = push(todoRef);
+    await set(newTaskRef, {
+      task: task.text,
+      status: task.status,
+    });
+  }
+
+  const changeTask = async (id) => {
+    const updateRef = ref(db, "TodoList/" + id);
+    await update(updateRef, {
+      status: !tasks.find((task) => task.id === id).status,
+    });
   };
 
-  const deleteTask = (id) => {
-    const updatedtasks = tasks.filter((task) => task.id !== id);
-    setTasks(updatedtasks);
+  const deleteTask = async (id) => {
+    const deleteRef = ref(db, "TodoList/" + id);
+    await remove(deleteRef);
   };
 
   return (
